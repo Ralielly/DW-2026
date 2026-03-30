@@ -1,0 +1,20 @@
+{
+  "name": "projeto",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev-http": "node --watch server_http.js",
+    "dev-fastify": "node --watch server_fastify.js",
+    "dev-express": "node --watch server_express.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "express": "^5.2.1",
+    "fastify": "^5.8.4"
+  }
+}

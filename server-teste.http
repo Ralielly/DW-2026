@@ -1,0 +1,2 @@
+### Testando rota que não existe para acionar nosso Handler Customizado
+GET http://localhost:3000/batata-frita
