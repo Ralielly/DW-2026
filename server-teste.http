@@ -1,2 +1,19 @@
-### Testando rota que não existe para acionar nosso Handler Customizado
-GET http://localhost:3000/batata-frita
+
+### Buscar por descrição
+GET http://localhost:3000/tarefas?busca=compras
+
+### Buscar apenas concluídas
+GET http://localhost:3000/tarefas?concluido=true
+
+### Busca combinada (descrição + status)
+GET http://localhost:3000/tarefas?busca=estudar&concluido=false
+
+
+
+### Testar validação (enviando sem descrição)
+POST http://localhost:3000/tarefas
+Content-Type: application/json
+
+{
+    "concluido": false
+}
