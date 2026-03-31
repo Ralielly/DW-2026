@@ -17,3 +17,10 @@ Content-Type: application/json
 {
     "concluido": false
 }
+
+### Alternar o status da tarefa de ID 1
+PATCH http://localhost:3000/tarefas/1/concluir
+
+
+### Ver resumo estatístico
+GET http://localhost:3000/tarefas/resumo

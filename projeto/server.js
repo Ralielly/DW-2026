@@ -17,6 +17,7 @@ const tarefas = [
     { id: 1, descricao: "Fazer compras", concluido: false }, 
     { id: 2, descricao: "Lavar o carro", concluido: false },
     { id: 3, descricao: "Estudar Fastify", concluido: true }
+    
 ]
 
 // 🔹 GET - Listar tarefas com filtros
@@ -104,6 +105,44 @@ server.delete('/tarefas/:id', async (request, reply) => {
     tarefas.splice(index, 1)
 
     return reply.status(204).send()
+})
+
+// PATH
+
+server.patch('/tarefas/:id/concluir', async (request, reply) => {
+    const id = Number(request.params.id)
+
+    const index = tarefas.findIndex(t => t.id === id)
+
+    if (index === -1) {
+        return reply.status(404).send({
+            status: 'error',
+            message: 'Tarefa não encontrada'
+        })
+    }
+
+    console.log('ANTES:', tarefas[index])
+
+    tarefas[index].concluido = !tarefas[index].concluido
+
+    console.log('DEPOIS:', tarefas[index])
+
+    return tarefas[index]
+})
+ 
+//GET RESUMO
+server.get('/tarefas/resumo', async (request, reply) => {
+    const total = tarefas.length
+
+    const concluidas = tarefas.filter(t => t.concluido === true).length
+
+    const pendentes = tarefas.filter(t => t.concluido === false).length
+
+    return {
+        total,
+        concluidas,
+        pendentes
+    }
 })
 
 // 🔹 404 global
