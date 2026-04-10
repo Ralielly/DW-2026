@@ -1,0 +1,29 @@
+1. Verificar se a descrição não está vazia ao criar uma tarefa.
+Camada: Controller
+
+Justificativa: Esta é uma validação de entrada (Input Validation). O Controller é a primeira camada a receber os dados do usuário. Se a descrição está vazia, a requisição já é inválida e deve ser "rejeitada" imediatamente, sem precisar chegar no Model ou no Banco de Dados.
+
+2. Verificar se o ID da tarefa existe antes de atualizar ou remover.
+Camada: Model (com apoio do Controller)
+
+Justificativa: Somente o Model tem acesso direto aos dados para saber se aquele ID realmente existe na lista. O Model deve retornar null ou false se não encontrar, e o Controller decide enviar o erro 404 para o usuário.
+
+3. Verificar se os parâmetros de consulta (query) são válidos.
+Camada: Controller
+
+Justificativa: Assim como a descrição vazia, isso é uma validação de formato de dados. O Controller deve garantir que o que o usuário enviou faz sentido antes de passar para o Model realizar a busca.
+
+4. Converter o parâmetro id da URL (String) para Número.
+Camada: Controller
+
+Justificativa: O parâmetro chega via protocolo HTTP (que é texto). É responsabilidade do Controller preparar e "limpar" esses dados (parsing) para que o Model receba exatamente o tipo de dado que ele espera (um Number).
+
+5. Impedir a remoção de uma tarefa que já esteja "concluída".
+Camada: Model
+
+Justificativa: Esta é uma Regra de Negócio (Business Rule). O Model é o "cérebro" que conhece o estado dos dados e as regras do sistema. É ele quem deve garantir que a integridade do histórico seja preservada, impedindo a deleção baseada no status atual da tarefa.
+
+6. Verificar limite de 10 tarefas pendentes antes de criar uma nova.
+Camada: Model
+
+Justificativa: Esta é uma Regra de Negócio (Business Rule). O Model é o "cérebro" que conhece o estado dos dados e as regras do sistema. É ele quem deve garantir que a integridade do histórico seja preservada, impedindo a deleção baseada no status atual da tarefa.
