@@ -1,45 +1,83 @@
-import * as TarefaModel from '../models/tarefamodel.js'
+// @file: src/controllers/tarefa.controller.js
 
-export async function listarTarefas(request, reply) {
-  console.log('LOG: Controller listarTarefas executado');
-  const tarefas = await TarefaModel.listar();
-  return reply.send(tarefas);
-}
+import model from '../models/tarefa.model.js'
 
-// Função para o novo endpoint de pendentes
-export async function listarTarefasPendentes(request, reply) {
-  console.log('LOG: Controller listarTarefasPendentes executado');
-  const tarefasPendentes = await TarefaModel.listarPendentes();
-  return reply.send(tarefasPendentes);
-}
-
-export async function obterResumo(request, reply) {
-  console.log('LOG: Controller obterResumo executado');
-  const resumo = await TarefaModel.obterResumo();
-  return reply.send(resumo);
-}
-
-export async function criarTarefa(request, reply) {
-  console.log('LOG: Controller criarTarefa executado');
-  const { descricao } = request.body;
-  
-  // Validação de entrada (Camada Controller)
-  if (!descricao || descricao.trim() === '') {
-    return reply.status(400).send({ status: 'error', message: 'Descrição obrigatória' });
+class TarefaController {
+  constructor() {
+    this.model = model
   }
 
-  const novaTarefa = await TarefaModel.criar(descricao);
-  return reply.status(201).send(novaTarefa);
+  async listarTarefas(request, reply) {
+    console.log("Controller: listarTarefas chamado")
+    const { busca, concluido } = request.query
+    const resultado = await this.model.listar({ busca, concluido })
+    return reply.send(resultado)
+  }
+
+  async criarTarefa(request, reply) {
+    console.log("Controller: criarTarefa chamado")
+    const { descricao } = request.body
+    if (!descricao || descricao.trim() === '') {
+      return reply.status(400).send({
+        status: 'error',
+        message: 'A descrição da tarefa é obrigatória'
+      })
+    }
+    const novaTarefa = await this.model.criar(descricao)
+    return reply.status(201).send(novaTarefa)
+  }
+
+  async obterTarefa(request, reply) {
+    console.log("Controller: obterTarefa chamado")
+    const id = Number(request.params.id)
+    const tarefa = await this.model.buscarPorId(id)
+    if (!tarefa) {
+      return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
+    }
+    return reply.send(tarefa)
+  }
+
+  async atualizarTarefa(request, reply) {
+    console.log("Controller: atualizarTarefa chamado")
+    const id = Number(request.params.id)
+    const tarefa = await this.model.atualizar(id, request.body)
+    if (!tarefa) {
+      return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
+    }
+    return reply.send(tarefa)
+  }
+
+  async concluirTarefa(request, reply) {
+    console.log("Controller: concluirTarefa chamado")
+    const id = Number(request.params.id)
+    const tarefa = await this.model.alternarConcluido(id)
+    if (!tarefa) {
+      return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
+    }
+    return reply.send(tarefa)
+  }
+
+  async removerTarefa(request, reply) {
+    console.log("Controller: removerTarefa chamado")
+    const id = Number(request.params.id)
+    const removido = await this.model.remover(id)
+    if (!removido) {
+      return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
+    }
+    return reply.status(204).send()
+  }
+
+  async obterResumo(request, reply) {
+    console.log("Controller: obterResumo chamado")
+    const resumo = await this.model.obterResumo()
+    return reply.send(resumo)
+  }
+
+  async obterPendentes(request, reply) {
+    console.log("Controller: obterPendentes chamado")
+    const tarefas = await this.model.listarPendentes()
+    return reply.send(tarefas)
+  }
 }
 
-export async function removerTarefa(request, reply) {
-  console.log('LOG: Controller removerTarefa executado');
-  const id = Number(request.params.id); // Conversão de tipo (Camada Controller)
-  
-  const removido = await TarefaModel.remover(id);
-  
-  if (!removido) {
-    return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' });
-  }
-  return reply.status(204).send();
-}
+export default new TarefaController()

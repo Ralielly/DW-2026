@@ -1,34 +1,46 @@
-import * as tarefaController from '../controllers/tarefacontroller.js'
+// @file: src/routes/tarefa.routes.js
 
-export default async function tarefasRoutes(server) {
-  
-  // Listar todas as tarefas
-  server.get('/tarefas', (req, rep) => {
-    console.log('LOG: Rota GET /tarefas chamada');
-    return tarefaController.listarTarefas(req, rep);
-  });
+import controller from '../controllers/tarefa.controller.js'
 
-  // NOVO ENDPOINT: Listar apenas pendentes
-  server.get('/tarefas/pendentes', (req, rep) => {
-    console.log('LOG: Rota GET /tarefas/pendentes chamada');
-    return tarefaController.listarTarefasPendentes(req, rep);
-  });
+export default async function tarefaRoutes(server) {
 
-  // Obter resumo
-  server.get('/tarefas/resumo', (req, rep) => {
-    console.log('LOG: Rota GET /tarefas/resumo chamada');
-    return tarefaController.obterResumo(req, rep);
-  });
+  server.get('/tarefas', async (request, reply) => {
+    console.log("Routes: GET /tarefas chamada")
+    controller.listarTarefas(request, reply)
+  })
 
-  // Criar tarefa
-  server.post('/tarefas', (req, rep) => {
-    console.log('LOG: Rota POST /tarefas chamada');
-    return tarefaController.criarTarefa(req, rep);
-  });
+  server.post('/tarefas', async (request, reply) => {
+    console.log("Routes: POST /tarefas chamada")
+    controller.criarTarefa(request, reply)
+  })
 
-  // Remover tarefa
-  server.delete('/tarefas/:id', (req, rep) => {
-    console.log(`LOG: Rota DELETE /tarefas/${req.params.id} chamada`);
-    return tarefaController.removerTarefa(req, rep);
-  });
+  server.get('/tarefas/resumo', async (request, reply) => {
+    console.log("Routes: GET /tarefas/resumo chamada")
+    controller.obterResumo(request, reply)
+  })
+
+  server.get('/tarefas/pendentes', async (request, reply) => {
+    console.log("Routes: GET /tarefas/pendentes chamada")
+    controller.obterPendentes(request, reply)
+  })
+
+  server.get('/tarefas/:id', async (request, reply) => {
+    console.log("Routes: GET /tarefas/:id chamada")
+    controller.obterTarefa(request, reply)
+  })
+
+  server.patch('/tarefas/:id', async (request, reply) => {
+    console.log("Routes: PATCH /tarefas/:id chamada")
+    controller.atualizarTarefa(request, reply)
+  })
+
+  server.patch('/tarefas/:id/concluir', async (request, reply) => {
+    console.log("Routes: PATCH /tarefas/:id/concluir chamada")
+    controller.concluirTarefa(request, reply)
+  })
+
+  server.delete('/tarefas/:id', async (request, reply) => {
+    console.log("Routes: DELETE /tarefas/:id chamada")
+    controller.removerTarefa(request, reply)
+  })
 }

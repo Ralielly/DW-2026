@@ -1,0 +1,12 @@
+1.
+Uma classe é um modelo ou estrutura usada para definir propriedades e comportamentos de um objeto, enquanto a instância é a concretização dessa classe, ou seja, o objeto criado a partir dela. Exportamos new TarefaModel() em vez da classe TarefaModel porque queremos garantir que exista apenas uma única instância do model sendo utilizada em toda a aplicação. Isso evita a criação de múltiplas cópias dos dados, garantindo consistência e compartilhamento das informações entre as diferentes partes do sistema.
+
+2.
+No TarefaController, o uso do constructor para armazenar o model em this.model permite um melhor desacoplamento entre as camadas da aplicação. Se cada método importasse o model diretamente, o código ficaria mais rígido e difícil de testar ou modificar, já que o controller ficaria fortemente dependente de uma implementação específica do model. Utilizar this.model facilita a manutenção, pois permite substituir o model por outra implementação sem precisar alterar todos os métodos do controller.
+
+
+3.
+O arquivo tarefa.routes.js não foi transformado em uma classe porque sua função principal é apenas configurar e registrar rotas no servidor. Ele não precisa manter estado nem encapsular comportamentos complexos, sendo suficiente como uma função simples. Transformá-lo em classe adicionaria complexidade desnecessária sem trazer benefícios reais para a estrutura da aplicação.
+
+4.
+O problema do this em callbacks ocorre quando um método de uma classe é passado diretamente como função de callback, fazendo com que o contexto de execução seja alterado e o this deixe de se referir à instância original da classe. Isso pode causar erros, como propriedades indefinidas. A solução mais comum em JavaScript moderno é utilizar arrow functions, pois elas preservam o contexto léxico do this, garantindo que ele continue apontando para a instância correta.
