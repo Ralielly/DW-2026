@@ -57,3 +57,16 @@ Content-Type: application/json
 {
     "concluido": false
 }
+
+POST http://localhost:3000/produtos
+Content-Type: application/json
+
+{}
+
+POST http://localhost:3000/produtos
+Content-Type: application/json
+
+{
+  "nome": "",
+  "preco": -5
+}

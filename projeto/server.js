@@ -1,35 +1,21 @@
 import Fastify from 'fastify'
-import cors from '@fastify/cors'
-
-import tarefaRoutes from './routes/tarefaroutes.js'
+import ProdutoController from './controllers/produto.controller.js'
+import produtoRoutes from './routes/produto.routes.js'
 
 const server = Fastify()
 
-server.register(cors, {
-    origin: '*',
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
-})
+const produtoController = new ProdutoController()
 
-// Registra as rotas de tarefas
-server.register(tarefaRoutes)
+server.register(produtoRoutes, { prefix: '/produtos', controller: produtoController })
 
-
-server.setNotFoundHandler((request, reply) => {
-  reply.code(404).send({
-    status: 'error',
-    message: 'O recurso solicitado não existe nesta API.',
-  })
-})
-
-const PORT = 3000
 const start = async () => {
-    try {
-        await server.listen({port: PORT})
-        console.log(`Servidor rodando em <http://localhost>:${PORT}`)
-    } catch (erro) {
-        console.error(erro)
-        process.exit(1)
-    }
+  try {
+    await server.listen({ port: 3000 })
+    console.log('Servidor rodando em <http://localhost:3000>')
+  } catch (erro) {
+    console.error(erro)
+    process.exit(1)
+  }
 }
 
 start()
