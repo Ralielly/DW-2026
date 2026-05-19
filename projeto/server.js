@@ -4,7 +4,7 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 
 import tarefaRoutes from './routes/tarefa.routes.js'
-import TarefaRepository from './repositories/tarefa.repository.js'
+import TarefaRepository from './respositories/tarefa.repository.js'
 import TarefaService from './services/tarefa.service.js'
 import TarefaController from './controllers/tarefa.controller.js'
 
@@ -15,19 +15,21 @@ server.register(cors, {
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
 })
 
-// Composition Root: criação e conexão das dependências
+// Composition Root
 const repository = new TarefaRepository()
 const service = new TarefaService(repository)
 const controller = new TarefaController(service)
 
-// Registra as rotas, passando o controller via options
+// Registra as rotas
 server.register(tarefaRoutes, { controller })
 
 const PORT = 3000
+
 server.listen({ port: PORT }, (err) => {
   if (err) {
     console.error(err)
     process.exit(1)
   }
+
   console.log(`Servidor rodando em http://localhost:${PORT}`)
 })
