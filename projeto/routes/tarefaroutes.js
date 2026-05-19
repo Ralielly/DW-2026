@@ -1,8 +1,7 @@
 // @file: src/routes/tarefa.routes.js
 
-import controller from '../controllers/tarefa.controller.js'
-
-export default async function tarefaRoutes(server) {
+export default async function tarefaRoutes(server, options) {
+  const { controller } = options    // ← recebe o controller de fora
 
   server.get('/tarefas', async (request, reply) => {
     console.log("Routes: GET /tarefas chamada")
@@ -17,11 +16,6 @@ export default async function tarefaRoutes(server) {
   server.get('/tarefas/resumo', async (request, reply) => {
     console.log("Routes: GET /tarefas/resumo chamada")
     controller.obterResumo(request, reply)
-  })
-
-  server.get('/tarefas/pendentes', async (request, reply) => {
-    console.log("Routes: GET /tarefas/pendentes chamada")
-    controller.obterPendentes(request, reply)
   })
 
   server.get('/tarefas/:id', async (request, reply) => {
