@@ -1,35 +1,40 @@
-// @file: server.js
-
+// @file: src/server.js
 import Fastify from 'fastify'
-import cors from '@fastify/cors'
+import tarefaRoutes from './features//tarefa.routes.js'
+import { AppError } from './errors/AppError.js'
 
-import tarefaRoutes from './routes/tarefa.routes.js'
-import TarefaRepository from './respositories/tarefa.repository.js'
-import TarefaService from './services/tarefa.service.js'
-import TarefaController from './controllers/tarefa.controller.js'
+const server = Fastify({ logger: true })
 
-const server = Fastify()
-
-server.register(cors, {
-  origin: '*',
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
-})
-
-// Composition Root
-const repository = new TarefaRepository()
-const service = new TarefaService(repository)
-const controller = new TarefaController(service)
-
-// Registra as rotas
-server.register(tarefaRoutes, { controller })
-
-const PORT = 3000
-
-server.listen({ port: PORT }, (err) => {
-  if (err) {
-    console.error(err)
-    process.exit(1)
+// ==========================================
+// TRATAMENTO DE ERROS GLOBAL (A Rede de Segurança)
+// ==========================================
+server.setErrorHandler((error, request, reply) => {
+  // 1. Verifica se o erro foi intencional (Regra de Negócio / Validação)
+  if (error instanceof AppError) {
+    return reply.status(error.statusCode).send({
+      status: 'error',
+      message: error.message
+    })
   }
 
-  console.log(`Servidor rodando em http://localhost:${PORT}`)
+  // 2. Se o erro NÃO for um AppError, é um erro inesperado
+  // (ex: banco de dados caiu, digitação errada no código).
+  // Aqui logamos o erro real no console para o desenvolvedor investigar...
+  console.error('🔥 ERRO INTERNO:', error)
+
+  // ... e devolvemos um 500 genérico para não expor dados sensíveis do servidor
+  return reply.status(500).send({
+    status: 'error',
+    message: 'Internal Server Error'
+  })
 })
+
+// ==========================================
+// REGISTRO DE ROTAS
+// ==========================================
+server.register(tarefaRoutes)
+
+const start = async () => {
+  await server.listen({ port: 3000 })
+}
+start()
