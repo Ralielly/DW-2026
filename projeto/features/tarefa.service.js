@@ -1,5 +1,5 @@
 // @file: src/features/tarefas/tarefa.service.js
-import { AppError } from '../errors/AppError.js'
+import { AppError } from '../../errors/AppError.js'
 
 export class TarefaService {
   constructor(repository) {
