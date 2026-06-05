@@ -4,6 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "dev": "node --watch server.js",
     "dev-http": "node --watch server_http.js",
     "dev-fastify": "node --watch server_fastify.js",
     "dev-express": "node --watch server_express.js"
@@ -14,7 +15,9 @@
   "description": "",
   "dependencies": {
     "@fastify/cors": "^11.2.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "fastify": "^5.8.4"
+    "fastify": "^5.8.4",
+    "pg": "^8.21.0"
   }
 }

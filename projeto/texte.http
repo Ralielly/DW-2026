@@ -1,0 +1,26 @@
+### Tarefa 1
+POST http://localhost:3000/laboratorio/tarefas-db
+Content-Type: application/json
+
+{
+  "descricao": "Persistir minha primeira tarefa no PostgreSQL"
+}
+
+### Tarefa 2
+POST http://localhost:3000/laboratorio/tarefas-db
+Content-Type: application/json
+
+{
+  "descricao": "Aprender a usar o Neon com Node.js"
+}
+
+### Tarefa 3
+POST http://localhost:3000/laboratorio/tarefas-db
+Content-Type: application/json
+
+{
+  "descricao": "Entender a diferença entre memória e persistência"
+}
+
+### Listar todas
+GET http://localhost:3000/laboratorio/tarefas-db
