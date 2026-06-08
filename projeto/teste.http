@@ -1,0 +1,39 @@
+### Listar todas as tarefas
+GET http://localhost:3000/tarefas
+
+### Listar só pendentes
+GET http://localhost:3000/tarefas?status=pendente
+
+### Listar só concluídas
+GET http://localhost:3000/tarefas?status=concluida
+
+### Buscar por descrição
+GET http://localhost:3000/tarefas?busca=compras
+
+### Resumo
+GET http://localhost:3000/tarefas/resumo
+
+### Criar tarefa
+POST http://localhost:3000/tarefas
+Content-Type: application/json
+
+{
+  "descricao": "Minha nova tarefa"
+}
+
+### Buscar por ID
+GET http://localhost:3000/tarefas/1
+
+### Concluir tarefa
+PATCH http://localhost:3000/tarefas/1/concluir
+
+### Atualizar tarefa
+PATCH http://localhost:3000/tarefas/1
+Content-Type: application/json
+
+{
+  "descricao": "Descrição atualizada"
+}
+
+### Remover tarefa
+DELETE http://localhost:3000/tarefas/1

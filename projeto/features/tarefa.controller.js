@@ -1,5 +1,3 @@
-// @file: src/features/tarefas/tarefa.controller.js
-
 export class TarefaController {
   constructor(service) {
     this.service = service
@@ -11,10 +9,13 @@ export class TarefaController {
     return reply.send(tarefas)
   }
 
+  async resumo(request, reply) {
+    const dados = await this.service.resumoTarefas()
+    return reply.send(dados)
+  }
+
   async buscar(request, reply) {
     const { id } = request.params
-    // Se não encontrar, o Service lança o erro e o código para aqui.
-    // Se passar para a linha de baixo, temos garantia que a tarefa existe.
     const tarefa = await this.service.buscarPorId(id)
     return reply.send(tarefa)
   }

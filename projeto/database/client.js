@@ -1,8 +1,11 @@
-// @file: src/database/client.js
-import { Client } from 'pg'
+import pg from 'pg'
+import 'dotenv/config'
 
-const client = new Client({
-  connectionString: process.env.DATABASE_URL
+const { Pool } = pg
+
+const client = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 })
 
 export default client
