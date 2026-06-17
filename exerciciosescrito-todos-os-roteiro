@@ -1,0 +1,84 @@
+
+Roteiro10:
+Exercício 4-
+
+Guardar tarefas em um array significa manter os dados na memória do processo Node.js enquanto ele está rodando. É rápido e simples, mas existe um problema sério escondido nessa simplicidade: tudo que está no array vive e morre junto com o processo. Assim que o servidor reinicia — seja por um crash, um deploy, ou simplesmente porque alguém digitou `rebuild` ou `restart` — a memória é zerada e o array volta a ser vazio. As tarefas que existiam não foram salvas em lugar nenhum, elas simplesmente deixam de existir.
+
+Guardar tarefas no PostgreSQL muda essa relação porque o banco grava os dados em disco, não apenas em memória. Isso é o que se chama de persistência: a informação continua existindo mesmo depois que o programa que a criou para de rodar. Reiniciar o servidor Node.js não afeta as tarefas, porque elas nunca dependeram do processo da aplicação para sobreviver — elas dependem do banco, que é um processo separado, com seu próprio ciclo de vida.
+
+Isso também muda onde fica a responsabilidade. Quando os dados estão em um array, a própria aplicação é responsável por tudo: por manter a estrutura em memória, por não perdê-la, por qualquer garantia de integridade. Quando os dados estão no PostgreSQL, essa responsabilidade passa a ser do banco — ele cuida de gravar de forma segura, de manter a integridade mesmo se algo falhar no meio de uma operação, de garantir que o dado escrito realmente foi escrito. A aplicação deixa de precisar se preocupar com isso e passa a apenas pedir e enviar dados através de queries.
+
+O impacto prático na aplicação é que ela se torna mais confiável e mais "descartável" no bom sentido: o processo Node.js pode cair, ser reiniciado, ser escalado em várias instâncias, e os dados continuam intactos, porque eles nunca estiveram amarrados à vida daquele processo específico. É exatamente essa separação entre "onde a aplicação roda" e "onde os dados vivem" que torna possível, por exemplo, ter múltiplas instâncias do servidor compartilhando o mesmo banco — algo impossível se cada uma tivesse seu próprio array isolado na memória.
+
+
+Roteiro11:
+Exercício 4-
+
+O SQL de laboratório não deveria continuar no `server.js` porque esse arquivo tem uma responsabilidade diferente: ele é o ponto de entrada da aplicação, onde o servidor é configurado, as rotas são registradas, os middlewares são plugados. Misturar ali uma query SQL escrita "na mão" para testar uma coisa rapidamente faz sentido como experimento, mas se ela fica lá, o `server.js` passa a acumular uma responsabilidade que não é dele: conhecer detalhes de uma tabela, de uma coluna, de uma sintaxe SQL específica. Isso deixa o arquivo confuso, difícil de testar isoladamente, e cria uma dependência escondida entre "como o servidor sobe" e "como os dados são lidos", duas coisas que deveriam poder mudar independentemente uma da outra.
+
+O `Repository` é o lugar correto para acesso a dados porque ele é a camada criada justamente para isolar esse conhecimento. Quem chama o `Repository` (normalmente o `Service`) não precisa saber se por trás existe um `SELECT` com join, uma tabela normalizada de um jeito ou de outro, ou até qual banco está sendo usado. O `Repository` concentra essa responsabilidade num único lugar, então se uma query precisa mudar, ou se o esquema do banco muda, o ajuste fica contido ali, sem espalhar efeito colateral para o resto da aplicação. É também o lugar que sabe traduzir o resultado bruto do banco para algo que o restante do sistema entende.
+
+O que mudou na arquitetura foi a remoção do SQL improvisado do `server.js` e sua migração para dentro do `Repository`, reforçando a separação Controller → Service → Repository → banco que já vinha sendo construída. O que não mudou foi o desenho geral de responsabilidades: o `server.js` continua sendo o ponto de entrada e configuração, o `Service` continua sendo o lugar das regras de negócio, e o módulo `database`/`Pool` continua isolado, cuidando só da conexão. Essa mudança não foi uma reestruturação, foi um ajuste de disciplina — colocar um código que estava no lugar errado no lugar certo, sem alterar a forma como as camadas conversam entre si.
+
+
+
+
+Roteir12:
+
+
+Exercício 1- Client vs Pool
+
+O Client resolve bem o problema de entender uma conexão. Ele representa uma única ligação com o banco, com um ciclo de vida explícito (connect → query → end), e isso é exatamente o que se precisa quando o objetivo é compreender o protocolo: o que acontece quando você abre uma conexão, executa um comando, fecha. É a ferramenta certa para um script pontual ou para estudar o comportamento do banco sem ruído.
+O Pool passa a fazer sentido quando a aplicação deixa de ser "um script que roda e termina" e se torna um servidor que atende várias requisições ao mesmo tempo. Cada requisição HTTP não pode esperar uma única conexão liberar, nem é viável abrir uma conexão nova do zero a cada chamada (handshake TCP + autenticação tem custo real). O Pool resolve isso mantendo um conjunto de conexões já abertas e reaproveitáveis, distribuindo-as entre as requisições.
+Esse assunto só aparece agora porque antes a concorrência não era um problema visível. Enquanto a trilha ainda estava organizando responsabilidades (entender uma query, depois separar Controller/Service/Repository), bastava uma conexão por vez. O Pool só se torna uma necessidade percebida quando a aplicação já está estruturada como servidor real — é nesse ponto que a pergunta "e se chegarem várias requisições simultâneas?" passa a fazer sentido, e não antes.
+
+
+Exercício 2 — Configuração do pool
+Pela documentação do pg, max controla quantos clientes o pool pode manter abertos ao mesmo tempo (o padrão é 10), e idleTimeoutMillis define por quanto tempo uma conexão ociosa permanece reservada antes de ser descartada (o padrão é 10000 ms).
+Frase-resumo: essa configuração equilibra o uso de recursos do banco (não abrir conexões demais) com o tempo de resposta da aplicação (não fechar conexões cedo demais e ter que reabri-las o tempo todo).
+
+
+
+
+
+Exercício 3 — Limites do Repository
+Pertencem ao módulo database:
+
+a criação e configuração do Pool (credenciais, max, idleTimeoutMillis etc.);
+a forma de obter uma conexão ou executar uma query (ex.: expor pool.query ou um getClient);
+o tratamento de eventos de infraestrutura, como erro de conexão ou encerramento gracioso do pool.
+
+Pertencem ao Repository:
+
+as queries SQL específicas de uma entidade (ex.: SELECT, INSERT, UPDATE de users);
+a conversão do resultado bruto do banco (rows) para o formato que o resto da aplicação espera;
+regras de acesso a dados como paginação, filtros e joins — sem conhecer regra de negócio, que é papel do Service.
+A linha que separa os dois: database sabe como conectar; Repository sabe o que perguntar ao banco.
+
+Exercício 4 — Revisão de arquitetura
+Pela lógica que os exercícios anteriores deixam entrever, o caminho parece ter sido este: no Roteiro 10 o foco estava em entender uma conexão isolada com Client, sem ainda separar responsabilidades — a query e a conexão provavelmente conviviam no mesmo lugar. No Roteiro 11 entrou a divisão de responsabilidades: nasceu o Repository como camada que isola o acesso a dados, e o módulo database se tornou responsável só pela infraestrutura de conexão, deixando o Repository livre para focar nas queries. No Roteiro 12 a conexão única deu lugar ao Pool, porque a aplicação já estava organizada o suficiente para suportar concorrência real.
+A ordem faz sentido pedagogicamente: não dá pra discutir pool de conexões antes de separar quem é responsável por conectar e quem é responsável por consultar — primeiro organiza-se a arquitetura, depois resolve-se a escala. Se eu estiver lendo errado algum detalhe específico do que os Roteiros 10–12 realmente diziam no seu material, me manda o conteúdo deles que eu ajusto a resposta com precisão.
+
+
+
+Roteiro13:
+
+Exercício 4 — Raciocinando sobre as decisões
+
+1. JOINs com intenção. A listagem geral usa LEFT JOIN porque seu objetivo é mostrar todas as tarefas existentes, independentemente de elas terem ou não um projeto vinculado — o LEFT JOIN garante que a tarefa apareça mesmo quando não há correspondência na tabela projetos. Já a busca por projeto usa INNER JOIN porque ali a pergunta é outra: "quais tarefas pertencem a este projeto específico?" — uma tarefa sem projeto simplesmente não é uma resposta válida para essa pergunta, então o INNER JOIN a exclui naturalmente.
+Um exemplo concreto: uma tarefa antiga cadastrada antes da regra do Exercício 1 existir, com projeto_id NULL. Ela apareceria na listagem geral (com projeto_nome vindo como NULL), mas não apareceria em nenhuma busca por projeto, porque não há projeto algum ao qual ela corresponda.
+
+2. Limite do modelo atual. Não, projeto_id não resolve o caso das tags. Uma chave estrangeira numa coluna representa uma relação 1:N — cada tarefa aponta para exatamente um projeto. Tags exigem uma relação N:N — uma tarefa pode ter várias tags, e uma mesma tag pode estar em várias tarefas. Não existe forma de uma única coluna guardar "vários valores" sem violar a ideia básica de uma coluna relacional (e guardar como texto separado por vírgula resolveria de forma frágil, sem integridade referencial e sem poder consultar por tag de forma eficiente).
+3. Esboço. O cenário pede uma tabela associativa entre tarefas e tags:
+
+tags
+  id
+  nome
+
+tarefas_tags
+  tarefa_id  (FK -> tarefas.id)
+  tag_id     (FK -> tags.id)
+
+
+
+  tarefas_tags não representa uma "coisa" do domínio, ela existe só para guardar a combinação de quais tarefas têm quais tags. Cada linha é um par tarefa-tag, e uma tarefa pode aparecer em várias linhas (uma por tag) — é exatamente esse "espalhar a relação em várias linhas" que uma coluna projeto_id sozinha não conseguiria fazer.

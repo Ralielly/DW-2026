@@ -45,4 +45,16 @@ export class TarefaService {
     await this.buscarPorId(id)
     return this.repository.remover(id)
   }
+
+  async criarTarefa(dados) {
+  const { projetoId } = dados
+
+  if (!projetoId) {
+    throw new AppError('Toda tarefa precisa estar associada a um projeto', 400)
+  }
+
+  return this.repository.criar(dados)
+}
+
+
 }

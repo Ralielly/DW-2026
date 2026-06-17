@@ -1,35 +1,27 @@
-import client from '../database/client.js'
+import pool from '../database/pool.js'
+import client from '../database/pool.js'
 
 class TarefaRepository {
+async buscarTodos() {
+  const resultado = await pool.query(`
+    SELECT
+      t.id,
+      t.descricao,
+      t.concluido,
+      t.criada_em,
+      t.projeto_id,
+      p.nome AS projeto_nome
+    FROM tarefas t
+    LEFT JOIN projetos p
+      ON p.id = t.projeto_id
+    ORDER BY t.id
+  `)
 
-  async buscarTodos({ busca, concluido } = {}) {
-    const condicoes = []
-    const valores = []
-
-    if (busca) {
-      valores.push(`%${busca}%`)
-      condicoes.push(`descricao ILIKE $${valores.length}`)
-    }
-
-    if (concluido !== undefined) {
-      valores.push(concluido)
-      condicoes.push(`concluido = $${valores.length}`)
-    }
-
-    const where = condicoes.length > 0 ? `WHERE ${condicoes.join(' AND ')}` : ''
-
-    const resultado = await client.query(`
-      SELECT id, descricao, concluido, criada_em
-      FROM tarefas
-      ${where}
-      ORDER BY id
-    `, valores)
-
-    return resultado.rows
-  }
+  return resultado.rows
+}
 
   async resumo() {
-    const resultado = await client.query(`
+    const resultado = await pool.query(`
       SELECT
         COUNT(*) AS total,
         COUNT(*) FILTER (WHERE concluido = true) AS concluidas,
@@ -39,33 +31,46 @@ class TarefaRepository {
     return resultado.rows[0]
   }
 
-  async buscarPorId(id) {
-    const resultado = await client.query(
-      `SELECT id, descricao, concluido, criada_em
-       FROM tarefas
-       WHERE id = $1`,
-      [id]
-    )
-    return resultado.rows[0] ?? null
-  }
+async buscarPorId(id) {
+  const resultado = await pool.query(
+    `
+      SELECT
+        t.id,
+        t.descricao,
+        t.concluido,
+        t.criada_em,
+        t.projeto_id,
+        p.nome AS projeto_nome
+      FROM tarefas t
+      LEFT JOIN projetos p
+        ON p.id = t.projeto_id
+      WHERE t.id = $1
+    `,
+    [id]
+  )
 
-  async salvar(tarefa) {
-    const resultado = await client.query(
-      `INSERT INTO tarefas (descricao, concluido)
-       VALUES ($1, $2)
-       RETURNING id, descricao, concluido, criada_em`,
-      [tarefa.descricao, tarefa.concluido ?? false]
-    )
-    return resultado.rows[0]
-  }
+  return resultado.rows[0] ?? null
+}
 
+async salvar(tarefa) {
+  const resultado = await pool.query(
+    `
+      INSERT INTO tarefas (descricao, concluido, projeto_id)
+      VALUES ($1, $2, $3)
+      RETURNING id, descricao, concluido, criada_em, projeto_id
+    `,
+    [tarefa.descricao, tarefa.concluido, tarefa.projetoId]
+  )
+
+  return resultado.rows[0]
+}
   async atualizar(id, dadosAtualizados) {
     const tarefaAtual = await this.buscarPorId(id)
     if (!tarefaAtual) return null
 
     const tarefaFinal = { ...tarefaAtual, ...dadosAtualizados, id: tarefaAtual.id }
 
-    const resultado = await client.query(
+    const resultado = await pool.query(
       `UPDATE tarefas
        SET descricao = $1, concluido = $2
        WHERE id = $3
@@ -74,14 +79,25 @@ class TarefaRepository {
     )
     return resultado.rows[0] ?? null
   }
-
+async buscarPorProjeto(projetoId) {
+  const { rows } = await pool.query(
+    `SELECT t.id, t.descricao, t.concluido, p.id AS projeto_id, p.nome AS projeto_nome
+     FROM tarefas t
+     INNER JOIN projetos p ON p.id = t.projeto_id
+     WHERE t.projeto_id = $1`,
+    [projetoId]
+  )
+  return rows
+}
   async remover(id) {
-    const resultado = await client.query(
+    const resultado = await pool.query(
       `DELETE FROM tarefas WHERE id = $1`,
       [id]
     )
     return resultado.rowCount > 0
   }
+
+  
 }
 
 export { TarefaRepository }

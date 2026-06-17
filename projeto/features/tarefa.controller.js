@@ -42,4 +42,19 @@ export class TarefaController {
     await this.service.removerTarefa(id)
     return reply.status(204).send()
   }
+async listarPorProjeto(request, reply) {
+  const { projetoId } = request.params
+  const tarefas = await this.service.listarPorProjeto(projetoId)
+  return reply.send(tarefas)
+}
+
+async criar(request, reply) {
+  const { projetoId } = request.body
+  if (!projetoId) {
+    return reply.status(400).send({ erro: 'projetoId é obrigatório' })
+  }
+  const tarefa = await this.service.criarTarefa(request.body)
+  return reply.status(201).send(tarefa)
+}
+  
 }

@@ -1,8 +1,7 @@
-import 'dotenv/config'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
-import tarefaRoutes from './features/tarefa.routes.js'
-import client from './database/client.js'
+import tarefaRoutes from './features/tarefas/tarefa.route.js'
+import pool from './database/pool.js'
 
 const server = Fastify()
 
@@ -24,11 +23,12 @@ const PORT = 3000
 
 const start = async () => {
   try {
-    await client.connect()
+    // Faz um teste simples para confirmar que o banco está acessível
+    await pool.query('SELECT 1')
     console.log('Conectado ao PostgreSQL com sucesso')
 
     await server.listen({ port: PORT })
-    console.log(`Servidor rodando em http://localhost:${PORT}`)
+    console.log(`Servidor rodando em <http://localhost>:${PORT}`)
   } catch (erro) {
     console.error('Falha ao iniciar a aplicação:', erro)
     process.exit(1)
