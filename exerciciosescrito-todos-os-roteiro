@@ -82,3 +82,36 @@ tarefas_tags
 
 
   tarefas_tags não representa uma "coisa" do domínio, ela existe só para guardar a combinação de quais tarefas têm quais tags. Cada linha é um par tarefa-tag, e uma tarefa pode aparecer em várias linhas (uma por tag) — é exatamente esse "espalhar a relação em várias linhas" que uma coluna projeto_id sozinha não conseguiria fazer.
+
+
+
+
+Roteiro 15
+
+Exercício 1 — Explicar a entrada do ORM
+
+O ORM entra depois do SQL puro porque primeiro é importante entender como o banco de dados funciona diretamente com SQL. Assim, aprendemos a criar tabelas, inserir, consultar, atualizar e excluir dados antes de utilizar uma ferramenta que facilita essas operações. O ORM permite trabalhar com o banco usando a linguagem da aplicação, deixando o código mais organizado e reduzindo a quantidade de SQL escrito manualmente.
+
+
+Exercício 4 — Comparar uma operação
+
+Para listar tarefas usando SQL puro:
+
+```sql
+SELECT * FROM tarefas ORDER BY id;
+```
+
+Usando Drizzle:
+
+```js
+const resultado = await db
+  .select()
+  .from(tarefas)
+  .orderBy(tarefas.id)
+```
+
+O SQL puro é mais próximo do banco de dados e oferece mais controle sobre a consulta, pois escrevemos diretamente o comando que será executado. Já o Drizzle deixa o código mais integrado ao JavaScript e ao schema da aplicação, facilitando a organização e a leitura.
+
+Em uma operação simples, o volume de código é parecido. A principal diferença é a proximidade com o banco: o SQL trabalha diretamente com a linguagem do PostgreSQL, enquanto o Drizzle cria a consulta usando JavaScript e as tabelas definidas no schema.
+
+Por isso, o SQL puro oferece mais controle direto sobre o banco, enquanto o Drizzle traz mais praticidade e integração com o código da aplicação.
